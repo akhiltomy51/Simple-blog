@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, flash, abort
+from flask import Flask, render_template, redirect, url_for, flash, abort,request
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 from datetime import date
@@ -10,9 +10,13 @@ from flask_login import UserMixin , login_user, LoginManager, login_required, cu
 from forms import LoginForm, RegisterForm, CreatePostForm, CommentForm
 from flask_gravatar import Gravatar
 import os
+import smtplib
+
+email = "paricase87@gmail.com"
+password = os.environ.get("password")
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
+app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "8BYkEfBA6O6donzWlSihBXox7C0sKR6b")
 ckeditor = CKEditor(app)
 Bootstrap(app)
 gravatar = Gravatar(app, size=100, rating='g', default='retro', force_default=False, force_lower=False, use_ssl=False, base_url=None)
@@ -226,6 +230,21 @@ def delete_comment(comment_id, post_id):
     db.session.delete(post_to_delete)
     db.session.commit()
     return redirect(url_for("show_post", post_id=post_id))
+
+
+@app.route("/responce", methods=["GET", "POST"])
+def responce():
+    if request.method == "POST":
+        with smtplib.SMTP("smtp.gmail.com", 587) as connection:
+            connection.starttls()
+            connection.login(user=email, password=password)
+            connection.sendmail(from_addr=email,
+                                to_addrs="akhiltomy51@gmail.com",
+                                msg=f"subject:helloo..\n\nHi am {request.form['name']}\n"
+                                    f"{request.form['message']}"
+                                    f"\n {request.form['phone']}, {request.form['email']}")
+
+        return redirect(url_for('get_all_posts'))
 
 
 if __name__ == "__main__":
