@@ -166,8 +166,19 @@ def about():
     return render_template("about.html", current_user=current_user)
 
 
-@app.route("/contact")
+@app.route("/contact", methods=["GET", "POST"])
 def contact():
+    if request.method == "POST":
+        with smtplib.SMTP("smtp.gmail.com", 587) as connection:
+            connection.starttls()
+            connection.login(user=email, password=password)
+            connection.sendmail(from_addr=email,
+                                to_addrs="akhiltomy51@gmail.com",
+                                msg=f"subject:helloo..\n\nHi am {request.form['name']}\n"
+                                    f"{request.form['message']}"
+                                    f"\n {request.form['phone']}, {request.form['email']}")
+
+        return redirect(url_for('get_all_posts'))
     return render_template("contact.html", current_user=current_user)
 
 
@@ -230,21 +241,6 @@ def delete_comment(comment_id, post_id):
     db.session.delete(post_to_delete)
     db.session.commit()
     return redirect(url_for("show_post", post_id=post_id))
-
-
-@app.route("/responce", methods=["GET", "POST"])
-def responce():
-    if request.method == "POST":
-        with smtplib.SMTP("smtp.gmail.com", 587) as connection:
-            connection.starttls()
-            connection.login(user=email, password=password)
-            connection.sendmail(from_addr=email,
-                                to_addrs="akhiltomy51@gmail.com",
-                                msg=f"subject:helloo..\n\nHi am {request.form['name']}\n"
-                                    f"{request.form['message']}"
-                                    f"\n {request.form['phone']}, {request.form['email']}")
-
-        return redirect(url_for('get_all_posts'))
 
 
 if __name__ == "__main__":
